@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Travian T4.6 3x — Cropland Lv17 Farm Plan</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #1a2129;
+    --panel-2: #222b35;
+    --border: #2e3a47;
+    --text: #e6edf3;
+    --muted: #8b98a5;
+    --accent: #4ade80;
+    --wood: #6ab04c;
+    --clay: #e17055;
+    --iron: #b2bec3;
+    --crop: #fdcb6e;
+    --gold: #ffd54f;
+    --done: #22c55e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  body {
+    font-family: -apple-system, "Segoe UI", "Noto Sans Thai", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 24px 16px 80px;
+  }
+  .container { max-width: 1180px; margin: 0 auto; width: 100%; }
+
+  header.hero {
+    text-align: center;
+    padding: 28px 20px;
+    background: linear-gradient(135deg, #1a2129, #232f3a);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 24px;
+  }
+  header.hero h1 { font-size: 1.55rem; letter-spacing: .5px; }
+  header.hero p { color: var(--muted); margin-top: 6px; font-size: .9rem; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .stat-card .label { color: var(--muted); font-size: .76rem; text-transform: uppercase; letter-spacing: .5px; }
+  .stat-card .value { font-size: 1.1rem; font-weight: 700; margin-top: 4px; }
+
+
+  section { margin-bottom: 28px; }
+  h2.section-title { font-size: 1.05rem; margin-bottom: 12px; padding-left: 10px; border-left: 4px solid var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 12px; overflow: hidden; font-size: .9rem; }
+  th, td { padding: 10px 12px; text-align: center; border-bottom: 1px solid var(--border); }
+  th { background: var(--panel-2); color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: .72rem; letter-spacing: .4px; }
+  td:first-child, th:first-child { text-align: left; }
+  tr:last-child td { border-bottom: none; }
+  .wood { color: var(--wood); font-weight: 600; }
+  .clay { color: var(--clay); font-weight: 600; }
+  .iron { color: var(--iron); font-weight: 600; }
+  .crop { color: var(--crop); font-weight: 600; }
+  .total-row td { background: var(--panel-2); font-weight: 700; }
+
+  /* clickable copy chip */
+  .copy {
+    cursor: pointer; border-radius: 6px; padding: 2px 8px; font-weight: 700;
+    background: rgba(255,255,255,.04); border: 1px solid transparent;
+    transition: background .15s, border-color .15s, transform .1s; position: relative; white-space: nowrap;
+  }
+  .copy:hover { background: rgba(255,255,255,.1); border-color: var(--border); }
+  .copy:active { transform: scale(.94); }
+  .copy .tag { color: var(--muted); font-weight: 600; font-size: .78rem; margin-right: 3px; }
+  .copy.copied::after {
+    content: "คัดลอกแล้ว ✓"; position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+    background: var(--done); color: #05130a; font-size: .68rem; font-weight: 700;
+    padding: 3px 8px; border-radius: 6px; white-space: nowrap; z-index: 5;
+  }
+
+  .dl-values { display: flex; flex-wrap: wrap; gap: 6px 2px; align-items: center; font-size: .9rem; }
+  .dl-values .sep { color: var(--border); }
+  .dl-title { font-size: .72rem; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+
+  /* Loop tracker */
+  .loop-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .progress-wrap { flex: 1; min-width: 200px; background: var(--panel-2); border-radius: 999px; height: 22px; overflow: hidden; border: 1px solid var(--border); }
+  .progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), #22c55e); transition: width .3s; }
+  .progress-label { font-weight: 700; min-width: 120px; }
+  button.reset { background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: .82rem; }
+  button.reset:hover { color: var(--text); border-color: var(--muted); }
+
+  /* 3 per row */
+  .tasks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 900px) { .tasks { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) { .tasks { grid-template-columns: 1fr; } }
+
+  .task-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; transition: border-color .2s; }
+  .task-card.complete { border-color: var(--done); background: #16241a; }
+  .task-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .task-head .task-no { font-size: 1.05rem; font-weight: 800; color: var(--accent); }
+  .task-card.complete .task-head .task-no { color: var(--done); }
+  .task-head .done-tag { color: var(--done); font-size: .76rem; display: none; }
+  .task-card.complete .done-tag { display: inline; }
+  .loop-total { font-size: .76rem; color: var(--gold); margin-bottom: 10px; }
+
+  .sub { padding: 9px 0; border-top: 1px dashed var(--border); }
+  .sub-head { display: flex; align-items: flex-start; gap: 9px; }
+  .sub-head input[type=checkbox] { width: 17px; height: 17px; margin-top: 3px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+  .sub-head label { flex: 1; min-width: 0; cursor: pointer; font-size: .84rem; font-weight: 700; overflow-wrap: anywhere; word-break: break-word; }
+  .sub-head .subno { color: var(--text); }
+  .sub-head .clock { display: block; color: var(--gold); font-weight: 700; font-size: .76rem; margin-top: 1px; }
+  .need-badge {
+    display: inline-block; background: rgba(253,203,110,.15); color: var(--crop);
+    border: 1px solid rgba(253,203,110,.35); border-radius: 999px;
+    padding: 1px 9px; font-size: .72rem; font-weight: 700; white-space: nowrap; vertical-align: middle;
+  }
+  .sub.checked .need-badge { opacity: .5; }
+  .sub.checked .sub-head label { color: var(--muted); text-decoration: line-through; }
+  .sub.checked .sub-head .clock { text-decoration: none; color: var(--muted); }
+  .sub-body { margin-top: 6px; margin-left: 26px; }
+  .sub.checked .sub-body { opacity: .5; }
+  .sub-body .blk { margin-top: 6px; }
+  .sub-note { color: var(--muted); font-size: .78rem; margin-top: 4px; }
+
+  footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 30px; line-height: 1.8; }
+
+  /* table wrapper allows horizontal scroll on small screens */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; }
+  .table-scroll table { min-width: 520px; }
+
+  /* ===== Mobile ===== */
+  @media (max-width: 620px) {
+    body { padding: 14px 10px 60px; }
+    header.hero { padding: 18px 12px; border-radius: 12px; }
+    header.hero h1 { font-size: 1.1rem; }
+    header.hero p { font-size: .78rem; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .stat-card { padding: 10px 12px; }
+    .stat-card .value { font-size: .92rem; }
+    h2.section-title { font-size: .95rem; }
+    .task-card { padding: 12px 13px; }
+    .sub-head label { font-size: .82rem; }
+    .sub-body { margin-left: 0; }
+    .dl-values { font-size: .84rem; gap: 6px 2px; }
+    /* bigger tap targets for copy chips & checkboxes on touch */
+    .copy { padding: 4px 9px; }
+    .sub-head input[type=checkbox] { width: 22px; height: 22px; }
+    .loop-controls { gap: 8px; }
+    .progress-label { min-width: auto; font-size: .88rem; }
+    .need-badge { font-size: .68rem; padding: 1px 7px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <h1>🌾 Travian T4.6 Speed 3x — Cropland Lv17 Farm Plan</h1>
+    <p>อัพบ่อข้าว Lv17 จำนวน 15 บ่อ (Task 1–15) แต่ละ Task มี 3 การเกลี่ย (X.1 ทหาร · X.2 ดองแร่ · X.3 กดบ่อ)</p>
+    <p style="margin-top:6px;color:var(--accent);font-size:.82rem">💡 คลิกตัวเลขสีเพื่อคัดลอก (เป็นเลขล้วนไม่มีลูกน้ำ) · ติ๊กเสร็จเร็วกว่ากำหนด เวลา Task ที่เหลือจะคำนวณใหม่ให้อัตโนมัติ</p>
+  </header>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="label">เกลี่ย X.1 / X.2</div><div class="value">2 ชม. 36 นาที</div></div>
+    <div class="stat-card"><div class="label">เกลี่ย X.3 (รอกดบ่อ)</div><div class="value">1 ชม. 39 นาที</div></div>
+    <div class="stat-card"><div class="label">1 Task (1 บ่อ)</div><div class="value">6 ชม. 51 นาที</div></div>
+    <div class="stat-card"><div class="label">รวม 15 บ่อ (ตามแผน)</div><div class="value">≈ 102 ชม. 45 นาที</div></div>
+    <div class="stat-card"><div class="label">เริ่ม Task 1</div><div class="value" id="startVal" style="color:var(--gold)">วันนี้ 08:30</div></div>
+    <div class="stat-card"><div class="label">คาดเสร็จทั้งหมด</div><div class="value" id="etaAll" style="color:var(--gold)">—</div></div>
+  </div>
+
+  <!-- TASK TRACKER -->
+  <section>
+    <h2 class="section-title">Task List — 15 บ่อ (แถวละ 3 · ติ๊กแล้วบันทึก + คำนวณเวลาใหม่)</h2>
+    <div class="loop-controls">
+      <span class="progress-label" id="progressLabel">บ่อสำเร็จ 0 / 15</span>
+      <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+      <button class="reset" id="resetBtn">รีเซ็ตทั้งหมด</button>
+    </div>
+    <div class="tasks" id="tasks"></div>
+  </section>
+
+  <!-- COSTS REFERENCE (bottom) -->
+  <section>
+    <h2 class="section-title">ราคาอ้างอิง (ต่อ 1 หน่วย)</h2>
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr><th>รายการ</th><th class="wood">ไม้</th><th class="clay">ดิน</th><th class="iron">เหล็ก</th><th class="crop">ข้าว</th><th>เวลา/ตัว</th><th>รวม</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>⚔️ ดาบ (Swordsman)</td><td class="wood">140</td><td class="clay">150</td><td class="iron">185</td><td class="crop">60</td><td>58s</td><td>535</td></tr>
+        <tr><td>🐴 ม้า (Theutates Thunder)</td><td class="wood">350</td><td class="clay">450</td><td class="iron">230</td><td class="crop">60</td><td>99s</td><td>1,090</td></tr>
+        <tr><td>🧱 แมว (Trebuchet)</td><td class="wood">960</td><td class="clay">1,450</td><td class="iron">630</td><td class="crop">90</td><td>398s</td><td>3,130</td></tr>
+        <tr class="total-row"><td>🌾 บ่อข้าว Lv17 (1 บ่อ)</td><td class="wood">256,190</td><td class="clay">329,385</td><td class="iron">256,190</td><td class="crop">73,195</td><td>—</td><td>914,960</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <footer>
+    Travian T4.6 Speed 3x • Crop 215,000/ชม. • ไม้/ดิน/เหล็ก 6,034/ชม. • Warehouse 400k / Granary 560k<br>
+    รวมทหารทั้งหมด 15 บ่อ (จากเกลี่ย X.1): ⚔️ ดาบ ~5,700 · 🐴 ม้า ~3,345 · 🧱 แมว ~825
+  </footer>
+
+</div>
+
+<script>
+  var TOTAL_TASKS = 15;
+  var STORAGE_KEY = "travian-farm-plan-v6";
+
+  var START_HOUR = 8, START_MIN = 30;
+  // duration (minutes) of each sub-step BEFORE the next one begins
+  var SUB_DURATIONS = [156, 156, 99]; // X.1=2:36, X.2=2:36, X.3=1:39
+  var TASK_MINUTES = 156 + 156 + 99;  // 411 = 6h51m
+
+  function fmt(n) { return n.toLocaleString("en-US"); }
+
+  // Each sub-step definition. type "res" rows are clickable copy chips.
+  var SUBS = [
+    {
+      key: "s1", subLabel: ".1", title: "เกลี่ย & สร้างทหาร", badge: 560000,
+      blocks: [
+        { items: [["ไม้","wood",168813],["ดิน","clay",222033],["เหล็ก","iron",140938],["ข้าว","crop",41190]] },
+        { title: "⚔️ ได้ทหาร", items: [["ดาบ","",380],["ม้า","",223],["แมว","",55]] }
+      ]
+    },
+    {
+      key: "s2", subLabel: ".2", title: "ดองแร่", badge: 560000,
+      blocks: [
+        { items: [["ไม้","wood",186667],["ดิน","clay",186667],["เหล็ก","iron",186666],["ข้าว","crop",0]] }
+      ]
+    },
+    {
+      key: "s3", subLabel: ".3", title: "รอ ~1:39 แล้วกดบ่อ Lv17", badge: 354960,
+      blocks: [
+        { note: "กดเกลี่ยทองที่บ่อเลย" }
+      ]
+    }
+  ];
+
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveState(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+  var state = loadState(); // { "1-s1": true/{t:timestamp}, ... }  we store timestamp on check
+
+  function isChecked(taskNo, key) { return !!state[taskNo + "-" + key]; }
+  function checkedTime(taskNo, key) {
+    var v = state[taskNo + "-" + key];
+    return (v && v.t) ? v.t : null;
+  }
+  function isTaskComplete(taskNo) {
+    return SUBS.every(function (s) { return isChecked(taskNo, s.key); });
+  }
+
+  // Flat index of a sub-step (0-based) across all tasks: (task-1)*3 + subIndex
+  function flatIndex(taskNo, subIndex) { return (taskNo - 1) * 3 + subIndex; }
+
+  // planned minutes-from-start for a given flat index
+  function plannedMinutes(taskNo, subIndex) {
+    var mins = 0;
+    var target = flatIndex(taskNo, subIndex);
+    for (var i = 0; i < target; i++) {
+      mins += SUB_DURATIONS[i % 3];
+    }
+    return mins;
+  }
+
+  // Anchor = most recent checked sub-step's real time (or plan start).
+  // Returns { anchorDate, anchorFlat } — everything after anchor is projected.
+  function getAnchor() {
+    var base = new Date(); base.setHours(START_HOUR, START_MIN, 0, 0);
+    var best = null, bestFlat = -1;
+    for (var t = 1; t <= TOTAL_TASKS; t++) {
+      for (var si = 0; si < 3; si++) {
+        var ct = checkedTime(t, SUBS[si].key);
+        if (ct) {
+          var f = flatIndex(t, si);
+          if (f > bestFlat) { bestFlat = f; best = ct; }
+        }
+      }
+    }
+    if (best === null) return { date: base, flat: -1 }; // nothing checked -> plan from start
+    return { date: new Date(best), flat: bestFlat };
+  }
+
+  // Projected clock time for a sub-step, given current anchor.
+  function projectedClock(taskNo, subIndex) {
+    var anchor = getAnchor();
+    var f = flatIndex(taskNo, subIndex);
+    var mins;
+    if (anchor.flat < 0) {
+      mins = plannedMinutes(taskNo, subIndex); // from base start
+    } else {
+      // minutes from the anchor step to this step (sum durations of steps in between)
+      var acc = 0;
+      for (var i = anchor.flat; i < f; i++) { acc += SUB_DURATIONS[i % 3]; }
+      mins = acc;
+    }
+    var d = new Date(anchor.date.getTime() + mins * 60000);
+    return fmtClock(d);
+  }
+
+  function fmtClock(d) {
+    var base = new Date(); base.setHours(START_HOUR, START_MIN, 0, 0);
+    var hh = String(d.getHours()).padStart(2, "0");
+    var mm = String(d.getMinutes()).padStart(2, "0");
+    var startDay = new Date(base); startDay.setHours(0,0,0,0);
+    var thisDay = new Date(d); thisDay.setHours(0,0,0,0);
+    var offset = Math.round((thisDay - startDay) / 86400000);
+    var day = offset === 0 ? "วันนี้" : offset === 1 ? "พรุ่งนี้" : (offset > 0 ? "+" + offset + "ว" : offset + "ว");
+    return day + " " + hh + ":" + mm;
+  }
+
+  function updateProgress() {
+    var done = 0;
+    for (var i = 1; i <= TOTAL_TASKS; i++) { if (isTaskComplete(i)) done++; }
+    document.getElementById("progressLabel").textContent = "บ่อสำเร็จ " + done + " / " + TOTAL_TASKS;
+    document.getElementById("progressBar").style.width = (done / TOTAL_TASKS * 100) + "%";
+    // ETA of last sub-step (task 15, .3) + its own duration (99m to build)
+    var last = projectedClockWithDuration(TOTAL_TASKS, 2);
+    document.getElementById("etaAll").textContent = last;
+    // เริ่ม Task 1: ถ้าติ๊ก 1.1 แล้วโชว์เวลาจริงที่ติ๊ก, ไม่งั้นโชว์ default
+    var t11 = checkedTime(1, "s1");
+    document.getElementById("startVal").textContent = t11 ? fmtClock(new Date(t11)) : "วันนี้ 08:30";
+  }
+  function projectedClockWithDuration(taskNo, subIndex) {
+    var anchor = getAnchor();
+    var f = flatIndex(taskNo, subIndex);
+    var acc = 0;
+    if (anchor.flat < 0) {
+      for (var i = 0; i < f; i++) acc += SUB_DURATIONS[i % 3];
+      acc += SUB_DURATIONS[subIndex]; // include this step's own wait
+      var base0 = new Date(); base0.setHours(START_HOUR, START_MIN, 0, 0);
+      return fmtClock(new Date(base0.getTime() + acc * 60000));
+    }
+    for (var j = anchor.flat; j < f; j++) acc += SUB_DURATIONS[j % 3];
+    acc += SUB_DURATIONS[subIndex];
+    return fmtClock(new Date(anchor.date.getTime() + acc * 60000));
+  }
+
+  function makeCopyChip(tag, tagClass, raw) {
+    var span = document.createElement("span");
+    span.className = "copy";
+    var t = tag ? "<span class='tag " + tagClass + "'>" + tag + "</span>" : "";
+    span.innerHTML = t + fmt(raw);
+    span.addEventListener("click", function () {
+      navigator.clipboard.writeText(String(raw)).then(function () {
+        span.classList.add("copied");
+        setTimeout(function () { span.classList.remove("copied"); }, 1000);
+      });
+    });
+    return span;
+  }
+
+  function makeBlock(b) {
+    var wrap = document.createElement("div");
+    wrap.className = "blk";
+    if (b.total) {
+      wrap.innerHTML = "<div class='dl-title'>" + b.label + "</div>";
+      var v = document.createElement("div");
+      v.className = "dl-values";
+      v.appendChild(makeCopyChip("", "", b.value));
+      wrap.appendChild(v);
+      return wrap;
+    }
+    if (b.title) {
+      var tt = document.createElement("div");
+      tt.className = "dl-title"; tt.textContent = b.title;
+      wrap.appendChild(tt);
+    }
+    if (b.items) {
+      var vals = document.createElement("div");
+      vals.className = "dl-values";
+      b.items.forEach(function (it, idx) {
+        vals.appendChild(makeCopyChip(it[0], it[1], it[2]));
+        if (idx < b.items.length - 1) {
+          var sep = document.createElement("span");
+          sep.className = "sep"; sep.textContent = "|"; vals.appendChild(sep);
+        }
+      });
+      wrap.appendChild(vals);
+    }
+    if (b.note) {
+      var n = document.createElement("div");
+      n.className = "sub-note"; n.textContent = b.note;
+      wrap.appendChild(n);
+    }
+    return wrap;
+  }
+
+  function render() {
+    var container = document.getElementById("tasks");
+    container.innerHTML = "";
+    for (var t = 1; t <= TOTAL_TASKS; t++) {
+      (function (taskNo) {
+        var card = document.createElement("div");
+        card.className = "task-card" + (isTaskComplete(taskNo) ? " complete" : "");
+
+        var head = document.createElement("div");
+        head.className = "task-head";
+        head.innerHTML = "<span class='task-no'>Task " + taskNo + "</span>" +
+          "<span class='done-tag'>✔ บ่อเสร็จ</span>";
+        card.appendChild(head);
+
+        var lt = document.createElement("div");
+        lt.className = "loop-total";
+        lt.innerHTML = "เริ่ม " + projectedClock(taskNo, 0);
+        card.appendChild(lt);
+
+        SUBS.forEach(function (s, si) {
+          var id = taskNo + "-" + s.key;
+          var sub = document.createElement("div");
+          sub.className = "sub" + (isChecked(taskNo, s.key) ? " checked" : "");
+
+          var sh = document.createElement("div");
+          sh.className = "sub-head";
+
+          var cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.checked = isChecked(taskNo, s.key);
+          cb.addEventListener("change", function () {
+            if (cb.checked) state[id] = { t: Date.now() };
+            else delete state[id];
+            saveState(state);
+            render();
+          });
+
+          var label = document.createElement("label");
+          var badgeHtml = s.badge ? " <span class='need-badge'>ต้องการแร่ " + fmt(s.badge) + "</span>" : "";
+          label.innerHTML = "<span class='subno'>" + taskNo + s.subLabel + "</span> " + s.title + badgeHtml +
+            "<span class='clock'>🕐 " + projectedClock(taskNo, si) + "</span>";
+
+          sh.appendChild(cb);
+          sh.appendChild(label);
+          sub.appendChild(sh);
+
+          var body = document.createElement("div");
+          body.className = "sub-body";
+          s.blocks.forEach(function (b) { body.appendChild(makeBlock(b)); });
+          sub.appendChild(body);
+
+          card.appendChild(sub);
+        });
+
+        container.appendChild(card);
+      })(t);
+    }
+    updateProgress();
+  }
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (confirm("รีเซ็ตความคืบหน้าทั้งหมด 15 บ่อ?")) {
+      state = {}; saveState(state); render();
+    }
+  });
+
+  render();
+</script>
+</body>
+</html>
