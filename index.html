@@ -43,6 +43,36 @@
 			width: 100%;
 		}
 
+		nav.topmenu {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			margin-bottom: 18px;
+		}
+
+		nav.topmenu a {
+			color: var(--muted);
+			text-decoration: none;
+			font-size: .86rem;
+			font-weight: 600;
+			padding: 8px 14px;
+			border: 1px solid var(--border);
+			border-radius: 999px;
+			background: var(--panel);
+			transition: color .15s, border-color .15s, background .15s;
+		}
+
+		nav.topmenu a:hover {
+			color: var(--text);
+			border-color: var(--accent);
+		}
+
+		nav.topmenu a.active {
+			color: #0f1419;
+			background: var(--accent);
+			border-color: var(--accent);
+		}
+
 		header.hero {
 			text-align: center;
 			padding: 32px 20px;
@@ -131,6 +161,12 @@
 
 <body>
 	<div class="container">
+		<nav class="topmenu">
+			<a href="index.html" class="active">🏠 สารบัญ</a>
+			<a href="crop17.html">🌾 คำนวณบ่อข้าว</a>
+			<a href="troops.html">⚔️ คำนวณทหาร</a>
+		</nav>
+
 		<header class="hero">
 			<h1>🌾 Travian Plan</h1>
 			<p>สารบัญเครื่องมือคำนวณและวางแผน Travian</p>
