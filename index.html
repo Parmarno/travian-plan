@@ -38,7 +38,7 @@
 		}
 
 		.container {
-			max-width: 900px;
+			max-width: 1180px;
 			margin: 0 auto;
 			width: 100%;
 		}
@@ -155,6 +155,35 @@
 			color: var(--muted);
 			font-size: .8rem;
 			margin-top: 40px;
+		}
+
+		/* ===== Mobile ===== */
+		@media (max-width: 620px) {
+			body {
+				padding: 14px 10px 60px;
+			}
+
+			nav.topmenu {
+				gap: 6px;
+			}
+
+			nav.topmenu a {
+				font-size: .78rem;
+				padding: 7px 11px;
+			}
+
+			header.hero {
+				padding: 22px 14px;
+			}
+
+			header.hero h1 {
+				font-size: 1.3rem;
+			}
+
+			.card-grid {
+				grid-template-columns: 1fr;
+				gap: 12px;
+			}
 		}
 	</style>
 </head>
