@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Travian — เครื่องคำนวณกระจายแร่สร้างทหาร</title>
+	<style>
+		:root {
+			--bg: #0f1419;
+			--panel: #1a2129;
+			--panel-2: #222b35;
+			--border: #2e3a47;
+			--text: #e6edf3;
+			--muted: #8b98a5;
+			--accent: #4ade80;
+			--wood: #6ab04c;
+			--clay: #e17055;
+			--iron: #b2bec3;
+			--crop: #fdcb6e;
+			--gold: #ffd54f;
+		}
+
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		html,
+		body {
+			max-width: 100%;
+			overflow-x: hidden;
+		}
+
+		body {
+			font-family: -apple-system, "Segoe UI", "Noto Sans Thai", Roboto, sans-serif;
+			background: var(--bg);
+			color: var(--text);
+			line-height: 1.6;
+			padding: 24px 16px 80px;
+		}
+
+		.container {
+			max-width: 1100px;
+			margin: 0 auto;
+			width: 100%;
+		}
+
+		a.back {
+			display: inline-block;
+			color: var(--muted);
+			text-decoration: none;
+			font-size: .86rem;
+			margin-bottom: 16px;
+		}
+
+		a.back:hover {
+			color: var(--accent);
+		}
+
+		header.hero {
+			text-align: center;
+			padding: 28px 20px;
+			background: linear-gradient(135deg, #1a2129, #232f3a);
+			border: 1px solid var(--border);
+			border-radius: 16px;
+			margin-bottom: 24px;
+		}
+
+		header.hero h1 {
+			font-size: 1.5rem;
+			letter-spacing: .5px;
+		}
+
+		header.hero p {
+			color: var(--muted);
+			margin-top: 6px;
+			font-size: .9rem;
+		}
+
+		section {
+			background: var(--panel);
+			border: 1px solid var(--border);
+			border-radius: 14px;
+			padding: 20px;
+			margin-bottom: 20px;
+		}
+
+		h2 {
+			font-size: 1.05rem;
+			margin-bottom: 14px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.input-row {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 14px;
+			align-items: flex-end;
+		}
+
+		.field {
+			flex: 1;
+			min-width: 200px;
+		}
+
+		.field label {
+			display: block;
+			color: var(--muted);
+			font-size: .8rem;
+			margin-bottom: 6px;
+		}
+
+		.field input {
+			width: 100%;
+			background: var(--bg);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			color: var(--text);
+			padding: 12px 14px;
+			font-size: 1.05rem;
+			font-family: inherit;
+		}
+
+		.field input:focus {
+			outline: none;
+			border-color: var(--accent);
+		}
+
+		button.calc {
+			background: var(--accent);
+			color: #0f1419;
+			border: none;
+			border-radius: 10px;
+			padding: 12px 24px;
+			font-size: 1rem;
+			font-weight: 700;
+			cursor: pointer;
+			font-family: inherit;
+		}
+
+		button.calc:hover {
+			filter: brightness(1.05);
+		}
+
+		.hint {
+			color: var(--muted);
+			font-size: .8rem;
+			margin-top: 10px;
+		}
+
+		.summary-line {
+			text-align: center;
+			font-size: 1.05rem;
+			font-weight: 700;
+			color: var(--accent);
+			margin-bottom: 16px;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: .88rem;
+		}
+
+		th,
+		td {
+			padding: 10px 8px;
+			text-align: right;
+			border-bottom: 1px solid var(--border);
+			white-space: nowrap;
+		}
+
+		th:first-child,
+		td:first-child {
+			text-align: left;
+		}
+
+		thead th {
+			color: var(--muted);
+			font-size: .74rem;
+			text-transform: uppercase;
+			letter-spacing: .4px;
+		}
+
+		tfoot td {
+			font-weight: 700;
+			border-top: 2px solid var(--border);
+			border-bottom: none;
+		}
+
+		.table-wrap {
+			overflow-x: auto;
+		}
+
+		.c-wood { color: var(--wood); }
+		.c-clay { color: var(--clay); }
+		.c-iron { color: var(--iron); }
+		.c-crop { color: var(--crop); }
+
+		.npc-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+			gap: 12px;
+		}
+
+		.npc-card {
+			background: var(--panel-2);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			padding: 14px;
+			text-align: center;
+		}
+
+		.npc-card .r-label {
+			font-size: .8rem;
+			color: var(--muted);
+		}
+
+		.npc-card .r-pct {
+			font-size: 1.8rem;
+			font-weight: 800;
+			margin: 4px 0;
+		}
+
+		.npc-card .r-amt {
+			font-size: .8rem;
+			color: var(--muted);
+		}
+
+		#results {
+			display: none;
+		}
+
+		.muted-note {
+			color: var(--muted);
+			font-size: .78rem;
+			margin-top: 10px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<a class="back" href="index.html">← กลับหน้าสารบัญ</a>
+
+		<header class="hero">
+			<h1>⚔️ เครื่องคำนวณกระจายแร่สร้างทหาร</h1>
+			<p>ใส่แร่รวมที่มี → กระจายสร้างดาบ/ม้า/แมว ให้ 3 ตึกเสร็จพร้อมกัน</p>
+		</header>
+
+		<section>
+			<h2>💰 แร่ที่มี</h2>
+			<div class="input-row">
+				<div class="field">
+					<label for="totalRes">แร่รวมทั้งหมด (ไม้ + ดิน + เหล็ก + ข้าว)</label>
+					<input type="text" id="totalRes" inputmode="numeric" placeholder="เช่น 585058" value="585058" />
+				</div>
+				<button class="calc" id="calcBtn">คำนวณ</button>
+			</div>
+			<p class="hint">ระบบจะเกลี่ยแร่ให้ได้เวลาสร้างของทั้ง 3 ตึกใกล้เคียงกันที่สุด โดยใช้แร่ไม่เกินที่กรอก แล้วบอก % สำหรับตั้ง NPC merchant</p>
+		</section>
+
+		<div id="results">
+			<section>
+				<h2>📊 สรุปการผลิตทหาร</h2>
+				<div class="summary-line" id="runTime"></div>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th>หน่วย</th>
+								<th>เวลา/ตัว</th>
+								<th>สร้างได้</th>
+								<th>เวลารวม</th>
+								<th>แร่ที่ใช้</th>
+							</tr>
+						</thead>
+						<tbody id="summaryBody"></tbody>
+						<tfoot id="summaryFoot"></tfoot>
+					</table>
+				</div>
+			</section>
+
+			<section>
+				<h2>🧾 แร่แยกประเภท (สำหรับ NPC)</h2>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th>ทรัพยากร</th>
+								<th>ดาบ</th>
+								<th>ม้า</th>
+								<th>แมว</th>
+								<th>เศษเหลือ</th>
+								<th>รวมต้องมี</th>
+							</tr>
+						</thead>
+						<tbody id="breakdownBody"></tbody>
+						<tfoot id="breakdownFoot"></tfoot>
+					</table>
+				</div>
+			</section>
+
+			<section>
+				<h2>🎯 ค่าตั้ง NPC Merchant</h2>
+				<div class="npc-grid" id="npcGrid"></div>
+				<p class="muted-note" id="npcNote"></p>
+			</section>
+		</div>
+	</div>
+
+	<script>
+		// ต้นทุน/ตัว: [wood, clay, iron, crop], เวลา(วินาที)/ตัว
+		const UNITS = [
+			{ key: "sword", name: "⚔️ ดาบ (Swordsman)", cost: [140, 150, 185, 60], time: 58 },
+			{ key: "horse", name: "🐴 ม้า (Theutates)", cost: [350, 450, 230, 60], time: 99 },
+			{ key: "cat", name: "🧱 แมว (Trebuchet)", cost: [960, 1450, 630, 90], time: 398 },
+		];
+		const RES_NAMES = ["ไม้ (Wood)", "โคลน (Clay)", "เหล็ก (Iron)", "ข้าว (Crop)"];
+		const RES_CLASS = ["c-wood", "c-clay", "c-iron", "c-crop"];
+
+		const totalCostPerUnit = u => u.cost.reduce((a, b) => a + b, 0);
+
+		// จำนวนทหารแต่ละชนิด เมื่อเป้าหมายเวลารวม = T วินาที (round ให้ใกล้ที่สุด)
+		function unitsForTime(T) {
+			return UNITS.map(u => Math.round(T / u.time));
+		}
+
+		// ต้นทุนแร่รวมของชุดจำนวน counts[]
+		function totalResourceCost(counts) {
+			let sum = 0;
+			counts.forEach((n, i) => { sum += n * totalCostPerUnit(UNITS[i]); });
+			return sum;
+		}
+
+		function compute(budget) {
+			// binary search หา T สูงสุดที่ต้นทุน <= budget
+			let lo = 0, hi = 1;
+			// ขยาย hi จนต้นทุนเกิน budget
+			while (totalResourceCost(unitsForTime(hi)) <= budget && hi < 1e9) hi *= 2;
+			while (hi - lo > 1) {
+				const mid = Math.floor((lo + hi) / 2);
+				if (totalResourceCost(unitsForTime(mid)) <= budget) lo = mid; else hi = mid;
+			}
+			let T = lo;
+			let counts = unitsForTime(T);
+
+			// เกลี่ยเศษ: ลองเพิ่มทีละตัวในหน่วยที่ทำให้เวลารวมยังบาลานซ์ ถ้ายังมี budget เหลือ
+			let used = totalResourceCost(counts);
+			let improved = true;
+			while (improved) {
+				improved = false;
+				// หาหน่วยที่ "เวลารวมปัจจุบัน" ต่ำสุด แล้วลองเพิ่ม 1 ตัวถ้า budget พอ
+				const runtimes = counts.map((n, i) => n * UNITS[i].time);
+				const order = [0, 1, 2].sort((a, b) => runtimes[a] - runtimes[b]);
+				for (const i of order) {
+					const addCost = totalCostPerUnit(UNITS[i]);
+					if (used + addCost <= budget) {
+						counts[i]++;
+						used += addCost;
+						improved = true;
+						break;
+					}
+				}
+			}
+			return { counts, used, surplus: budget - used };
+		}
+
+		function fmt(n) { return Math.round(n).toLocaleString("en-US"); }
+
+		function fmtDuration(sec) {
+			const h = Math.floor(sec / 3600);
+			const m = Math.floor((sec % 3600) / 60);
+			const s = Math.round(sec % 60);
+			const parts = [];
+			if (h) parts.push(h + " ชม.");
+			if (m) parts.push(m + " นาที");
+			if (!h && !m) parts.push(s + " วินาที");
+			else if (s && !h) parts.push(s + " วิ");
+			return parts.join(" ");
+		}
+
+		function render(budget) {
+			const { counts, used, surplus } = compute(budget);
+
+			// สรุปการผลิต
+			const summaryBody = document.getElementById("summaryBody");
+			summaryBody.innerHTML = "";
+			let totalUsed = 0, totalUnits = 0;
+			UNITS.forEach((u, i) => {
+				const n = counts[i];
+				const runtime = n * u.time;
+				const resCost = n * totalCostPerUnit(u);
+				totalUsed += resCost;
+				totalUnits += n;
+				const tr = document.createElement("tr");
+				tr.innerHTML =
+					`<td>${u.name}</td>` +
+					`<td>${u.time}s</td>` +
+					`<td>${fmt(n)} ตัว</td>` +
+					`<td>${fmtDuration(runtime)}</td>` +
+					`<td>${fmt(resCost)}</td>`;
+				summaryBody.appendChild(tr);
+			});
+			document.getElementById("summaryFoot").innerHTML =
+				`<tr><td>รวม</td><td></td><td>${fmt(totalUnits)} ตัว</td><td></td><td>${fmt(totalUsed)}</td></tr>`;
+
+			// เวลาสูงสุดในบรรดา 3 ตึก = เวลาที่ใช้จริงจนเสร็จทั้งหมด
+			const maxRuntime = Math.max(...UNITS.map((u, i) => counts[i] * u.time));
+			document.getElementById("runTime").textContent =
+				`⏱️ เวลาสร้างเสร็จ ~ ${fmtDuration(maxRuntime)} (3 ตึกขนานกัน)`;
+
+			// breakdown แร่แยกประเภท
+			const perRes = [0, 1, 2, 3].map(r =>
+				UNITS.map((u, i) => counts[i] * u.cost[r])
+			);
+			const resTotals = perRes.map(arr => arr.reduce((a, b) => a + b, 0));
+			const grandUsed = resTotals.reduce((a, b) => a + b, 0);
+
+			// กระจายเศษเหลือลงไม้/ดิน/เหล็ก (ไม่ลงข้าว) เพื่อให้รวม = budget
+			const surplusSplit = [0, 0, 0, 0];
+			let rem = budget - grandUsed;
+			const targets = [0, 1, 2]; // wood, clay, iron
+			targets.forEach((t, idx) => {
+				const share = Math.floor(rem / (targets.length - idx));
+				surplusSplit[t] = share;
+				rem -= share;
+			});
+			surplusSplit[0] += rem; // เศษสุดท้ายลงไม้
+
+			const breakdownBody = document.getElementById("breakdownBody");
+			breakdownBody.innerHTML = "";
+			const finalTotals = [0, 1, 2, 3].map(r => resTotals[r] + surplusSplit[r]);
+			[0, 1, 2, 3].forEach(r => {
+				const tr = document.createElement("tr");
+				tr.innerHTML =
+					`<td class="${RES_CLASS[r]}">${RES_NAMES[r]}</td>` +
+					`<td>${fmt(perRes[r][0])}</td>` +
+					`<td>${fmt(perRes[r][1])}</td>` +
+					`<td>${fmt(perRes[r][2])}</td>` +
+					`<td>+${fmt(surplusSplit[r])}</td>` +
+					`<td>${fmt(finalTotals[r])}</td>`;
+				breakdownBody.appendChild(tr);
+			});
+			const grandTotal = finalTotals.reduce((a, b) => a + b, 0);
+			// ผลรวมต้นทุนแร่ต่อชนิดทหาร (คอลัมน์ดาบ/ม้า/แมว)
+			const colTotals = counts.map((n, i) => n * totalCostPerUnit(UNITS[i]));
+			const surplusTotal = surplusSplit.reduce((a, b) => a + b, 0);
+			document.getElementById("breakdownFoot").innerHTML =
+				`<tr><td>รวม</td>` +
+				`<td>${fmt(colTotals[0])}</td>` +
+				`<td>${fmt(colTotals[1])}</td>` +
+				`<td>${fmt(colTotals[2])}</td>` +
+				`<td>+${fmt(surplusTotal)}</td>` +
+				`<td>${fmt(grandTotal)}</td></tr>`;
+
+			// NPC %
+			const npcGrid = document.getElementById("npcGrid");
+			npcGrid.innerHTML = "";
+			const pcts = finalTotals.map(v => (v / grandTotal) * 100);
+			// ปัดเป็นจำนวนเต็มแล้วปรับให้รวม = 100
+			let rounded = pcts.map(p => Math.round(p));
+			let diff = 100 - rounded.reduce((a, b) => a + b, 0);
+			// ปรับ diff ลงในตัวที่มีเศษมากสุด/น้อยสุด
+			while (diff !== 0) {
+				const idx = pcts
+					.map((p, i) => ({ i, frac: p - Math.floor(p) }))
+					.sort((a, b) => b.frac - a.frac)[diff > 0 ? 0 : 3].i;
+				rounded[idx] += diff > 0 ? 1 : -1;
+				diff += diff > 0 ? -1 : 1;
+			}
+			[0, 1, 2, 3].forEach(r => {
+				const card = document.createElement("div");
+				card.className = "npc-card";
+				card.innerHTML =
+					`<div class="r-label ${RES_CLASS[r]}">${RES_NAMES[r]}</div>` +
+					`<div class="r-pct ${RES_CLASS[r]}">${rounded[r]}%</div>` +
+					`<div class="r-amt">${fmt(finalTotals[r])} หน่วย</div>`;
+				npcGrid.appendChild(card);
+			});
+			document.getElementById("npcNote").textContent =
+				`รวมทั้งหมด ${fmt(grandTotal)} หน่วย · ใช้สร้างทหารจริง ${fmt(grandUsed)} · เศษเหลือ ${fmt(budget - grandUsed)} หน่วย`;
+
+			document.getElementById("results").style.display = "block";
+		}
+
+		function parseInput() {
+			const raw = document.getElementById("totalRes").value.replace(/[^0-9]/g, "");
+			return parseInt(raw || "0", 10);
+		}
+
+		document.getElementById("calcBtn").addEventListener("click", () => {
+			const b = parseInput();
+			if (b > 0) render(b);
+		});
+		document.getElementById("totalRes").addEventListener("keydown", e => {
+			if (e.key === "Enter") document.getElementById("calcBtn").click();
+		});
+
+		// คำนวณครั้งแรกด้วยค่า default
+		render(parseInput());
+	</script>
+</body>
+
+</html>
