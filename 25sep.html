@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Attack Plan — ถึง 04:00:00</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#0a0f1a; color:#c0d8f0; font-family:Arial,sans-serif; font-size:12px; padding:16px; }
+h2 { color:#88ddff; margin-bottom:4px; font-size:15px; }
+.clock { font-size:11px; color:#88aacc; margin-bottom:14px; }
+.wrap { display:flex; flex-wrap:wrap; gap:12px; }
+.card { background:#0a1820; border:1px solid #1e4a6a; border-radius:6px; padding:10px 12px; min-width:480px; max-width:100%; flex:1; overflow:hidden; box-sizing:border-box; }
+.card-hdr { display:flex; align-items:center; gap:6px; margin-bottom:7px; flex-wrap:wrap; }
+.card-name { color:#88ccff; font-weight:bold; font-size:12px; flex:1 1 120px; min-width:0; word-break:break-word; overflow-wrap:break-word; }
+.card-troop { font-size:10px; color:#66aacc; word-break:break-word; }
+.card-ts { font-size:10px; color:#ffaa44; background:#2a1a00; border:1px solid #7a5500; border-radius:3px; padding:1px 5px; white-space:nowrap; }
+.card-coord { font-size:10px; color:#446688; white-space:nowrap; }
+.tbl-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table { width:100%; min-width:460px; border-collapse:collapse; }
+th { font-size:10px; color:#66aacc; padding:4px 5px; text-align:center; border-bottom:1px solid #1e4a6a; background:#0a2030; white-space:nowrap; }
+td { padding:5px 4px; text-align:center; font-size:11px; border-bottom:1px solid #0a1820; white-space:nowrap; }
+td:first-child, th:first-child { white-space:normal; word-break:break-word; }
+.real-row { border-left:3px solid #aa4444; }
+.fake-row { border-left:3px solid #44aa44; }
+.send-time { color:#ffdd66; font-size:14px; font-weight:bold; }
+.cd { font-size:11px; font-weight:bold; margin-top:2px; padding:2px 6px; border-radius:4px; display:inline-block; }
+.cd-late { background:#3a1a00; color:#ffaa44; }
+.cd-soon { background:#3a2a00; color:#ffee44; animation:blink 1s infinite; }
+.cd-ok   { background:#002a10; color:#44ff88; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.tgt-name { color:#ffdd88; text-decoration:none; }
+.type-real { color:#ff8888; font-size:10px; }
+.type-fake { color:#88ff88; font-size:10px; }
+.copy-btn { background:#0a2030; border:1px solid #1e5a7a; color:#66aacc; border-radius:3px; padding:2px 6px; cursor:pointer; font-size:10px; }
+@media (max-width:700px) {
+  body { padding:10px; }
+  .wrap { flex-direction:column; gap:10px; }
+  .card { min-width:0; width:100%; }
+}
+</style>
+</head>
+<body>
+<h2>⚔ Attack Plan</h2>
+<div class="clock">🎯 ถึงเป้า: <b id="arrive-display"></b> &nbsp;|&nbsp; เวลาปัจจุบัน: <span id="now-clock"></span></div>
+<div class="wrap" id="wrap"></div>
+<script>
+var PLAN    = [{"name":"DG00 (D-Guardian)","x":-98,"y":88,"troop":"[R] Fire Catapult","ts":"TS18 (460%)","rows":[{"tgtName":"🎯 ZOO (gonzy)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-155&y=-100","isReal":false,"dist":"196.45","travel":"09:43:35","sendMs":1790334984650.6472},{"tgtName":"🎯 KARAMAN (GmbCnr)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-57&y=-79","isReal":false,"dist":"171.96","travel":"08:50:21","sendMs":1790338179222.064},{"tgtName":"🎯 02 - Glavnica Donja (Aragorn)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-31&y=-40","isReal":true,"dist":"144.47","travel":"07:50:36","sendMs":1790341764142.0022},{"tgtName":"🎯 03 - Zabok (Aragorn)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-24&y=-31","isReal":false,"dist":"140.13","travel":"07:41:09","sendMs":1790342330598.1887},{"tgtName":"🎯 เป้าหมาย 15","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=0&y=0","isReal":false,"dist":"131.71","travel":"07:22:51","sendMs":1790343428894.7903},{"tgtName":"🎯 05 (DasonJerulo)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-102&y=-27","isReal":false,"dist":"115.07","travel":"06:46:40","sendMs":1790345599624.671}]},{"name":"Silverwing (Dreamfyre)","x":-70,"y":89,"troop":"[R] Fire Catapult","ts":"TS20 (500%)","rows":[{"tgtName":"🎯 ZOO (gonzy)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-155&y=-100","isReal":false,"dist":"207.23","travel":"09:34:28","sendMs":1790335531899.952},{"tgtName":"🎯 KARAMAN (GmbCnr)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-57&y=-79","isReal":false,"dist":"168.50","travel":"08:17:00","sendMs":1790340179732.9395},{"tgtName":"🎯 02 - Glavnica Donja (Aragorn)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-31&y=-40","isReal":true,"dist":"134.77","travel":"07:09:32","sendMs":1790344228024.2395},{"tgtName":"🎯 03 - Zabok (Aragorn)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-24&y=-31","isReal":false,"dist":"128.51","travel":"06:57:02","sendMs":1790344978249.1267},{"tgtName":"🎯 05 (DasonJerulo)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-102&y=-27","isReal":false,"dist":"120.33","travel":"06:40:40","sendMs":1790345960055.4019},{"tgtName":"🎯 เป้าหมาย 15","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=0&y=0","isReal":false,"dist":"113.23","travel":"06:26:28","sendMs":1790346812417.4336}]},{"name":"Dragonstone (Balerion)","x":-81,"y":83,"troop":"[G] Trebuchet","ts":"TS20 (500%)","rows":[{"tgtName":"🎯 ZOO (gonzy)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-155&y=-100","isReal":false,"dist":"197.40","travel":"09:14:47","sendMs":1790336712534.9604},{"tgtName":"🎯 KARAMAN (GmbCnr)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-57&y=-79","isReal":false,"dist":"163.77","travel":"08:07:32","sendMs":1790340747824.5479},{"tgtName":"🎯 02 - Glavnica Donja (Aragorn)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-31&y=-40","isReal":true,"dist":"132.77","travel":"07:05:33","sendMs":1790344467090.6611},{"tgtName":"🎯 03 - Zabok (Aragorn)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-24&y=-31","isReal":false,"dist":"127.46","travel":"06:54:55","sendMs":1790345105295.034},{"tgtName":"🎯 เป้าหมาย 15","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=0&y=0","isReal":false,"dist":"115.97","travel":"06:31:57","sendMs":1790346483103.7942},{"tgtName":"🎯 05 (DasonJerulo)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-102&y=-27","isReal":false,"dist":"111.99","travel":"06:23:58","sendMs":1790346961607.239}]},{"name":"Drogba (Mzeedzad)","x":-90,"y":86,"troop":"[T] Catapult","ts":"TS20 (500%)","rows":[{"tgtName":"🎯 ZOO (gonzy)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-155&y=-100","isReal":false,"dist":"197.03","travel":"09:14:04","sendMs":1790336756345.4602},{"tgtName":"🎯 KARAMAN (GmbCnr)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-57&y=-79","isReal":false,"dist":"168.27","travel":"08:16:32","sendMs":1790340207882.726},{"tgtName":"🎯 02 - Glavnica Donja (Aragorn)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-31&y=-40","isReal":true,"dist":"139.13","travel":"07:18:16","sendMs":1790343704467.6636},{"tgtName":"🎯 03 - Zabok (Aragorn)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-24&y=-31","isReal":false,"dist":"134.33","travel":"07:08:40","sendMs":1790344280198.5125},{"tgtName":"🎯 เป้าหมาย 15","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=0&y=0","isReal":false,"dist":"124.48","travel":"06:48:58","sendMs":1790345462048.3333},{"tgtName":"🎯 05 (DasonJerulo)","tgtLink":"https://ts31.x3.asia.travian.com/karte.php?x=-102&y=-27","isReal":false,"dist":"113.64","travel":"06:27:16","sendMs":1790346763754.1824}]}];
+var ARRIVE_MS = 1790370000000;
+
+function pad(n){return n<10?"0"+n:""+n;}
+function fmtMs(ms){
+  if(ms<0) return null;
+  var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),sc=s%60;
+  return (h?pad(h)+"h ":"")+pad(m)+"m "+pad(sc)+"s";
+}
+function fmtTime(ms){
+  var d=new Date(ms);
+  return pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+}
+function copyText(t){
+  navigator.clipboard.writeText(t).catch(function(){
+    var el=document.createElement("input");el.value=t;
+    document.body.appendChild(el);el.select();
+    document.execCommand("copy");document.body.removeChild(el);
+  });
+}
+
+function buildCards(){
+  var wrap=document.getElementById("wrap");
+  wrap.innerHTML="";
+  PLAN.forEach(function(atk,ai){
+    var card=document.createElement("div"); card.className="card";
+    var hdr="<div class=\"card-hdr\">"+
+      "<div class=\"card-name\">🗡 "+atk.name+"</div>"+
+      "<div class=\"card-troop\">"+atk.troop+"</div>"+
+      (atk.ts?"<div class=\"card-ts\">"+atk.ts+"</div>":"")+
+      "<div class=\"card-coord\">("+atk.x+"|"+atk.y+")</div>"+
+      "</div>";
+    var tbl="<table><thead><tr><th>เป้าหมาย</th><th>ประเภท</th><th>ระยะ</th><th>เวลาเดิน</th><th>⏰ ส่งเวลา</th><th>นับถอยหลัง</th><th></th></tr></thead><tbody>";
+    var sortedRows=atk.rows.map(function(r,ri){return {r:r,ri:ri};}).sort(function(a,b){return a.r.sendMs-b.r.sendMs;});
+    sortedRows.forEach(function(item){
+      var r=item.r, ri=item.ri;
+      var rc=r.isReal?"real-row":"fake-row";
+      var tc=r.isReal?"type-real":"type-fake";
+      var tt=r.isReal?"⚔ จริง":"👻 Fake";
+      var tname=r.tgtLink
+        ?"<a class=\"tgt-name\" href=\""+r.tgtLink+"\" target=\"_blank\">"+r.tgtName+"</a>"
+        :"<span class=\"tgt-name\">"+r.tgtName+"</span>";
+      var sendStr=fmtTime(r.sendMs);
+      tbl+="<tr class=\""+rc+"\">"+
+        "<td style=\"text-align:left;padding-left:6px;\">"+tname+"</td>"+
+        "<td><span class=\""+tc+"\">"+tt+"</span></td>"+
+        "<td style=\"color:#88ccff;\">"+r.dist+"</td>"+
+        "<td style=\"color:#88ffcc;\">"+r.travel+"</td>"+
+        "<td><div class=\"send-time\">"+sendStr+"</div></td>"+
+        "<td><div class=\"cd\" id=\"cd_"+ai+"_"+ri+"\"></div></td>"+
+        "<td><button class=\"copy-btn\" onclick=\"copyText('"+sendStr+"')\" >📋</button></td>"+
+        "</tr>";
+    });
+    tbl+="</tbody></table>";
+    card.innerHTML=hdr+"<div class=\"tbl-wrap\">"+tbl+"</div>";
+    wrap.appendChild(card);
+  });
+}
+
+function tick(){
+  var now=Date.now();
+  document.getElementById("now-clock").textContent=fmtTime(now);
+  document.getElementById("arrive-display").textContent=fmtTime(ARRIVE_MS)+" ("+new Date(ARRIVE_MS).toLocaleDateString("th-TH")+")";
+  PLAN.forEach(function(atk,ai){
+    atk.rows.forEach(function(r,ri){
+      var el=document.getElementById("cd_"+ai+"_"+ri);
+      if(!el) return;
+      var left=r.sendMs-now;
+      if(left<0){
+        el.className="cd cd-late"; el.textContent="ส่งแล้ว";
+      } else if(left<300000){
+        el.className="cd cd-soon"; el.textContent=fmtMs(left);
+      } else {
+        el.className="cd cd-ok"; el.textContent=fmtMs(left);
+      }
+    });
+  });
+}
+
+buildCards();
+tick();
+setInterval(tick,1000);
+</script>
+</body>
+</html>
